@@ -1,0 +1,199 @@
+open visual studio code:
+extensions (ctrl+shift+X)
+search: java extension pack 
+spring boot extension pack
+after installing command plate ctrl+shift+p [>Add Function breakppoint]
+Search for spring and select Spring initializr : create a maven project.
+Now , select a spring boot version 3.2.1
+Select project language java
+Give Group id com.msc and press enter
+Give artifact id is_the_site_up and press enter
+Select packaging type jar
+Select java version 17
+Select the dependencies spring boot devtools and spring web
+Select the where you want to generate your spring boot application and click on generate into this folder
+On the right-hand side notification will pop up for open a project(if not pop up use ctrl+k+ctrl+o)
+
+In application got to java projects {go to file open folder saved destination}- src/main/java – com.msc.is_the_site_up and open the application 
+
+Run the IsTheSiteApplication.java and check the port where application is running
+
+Right click on src/main/java and add new class and name its controllers.UrlCheckController
+
+Write a following code in UrlCheckController
+
+package com.msc.is_the_site_up.controllers;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+@RestController
+public class UrlCheckController {
+private final String SITE_IS_UP = "Site is Up!";
+private final String SITE_IS_DOWN = "Site is Down!";
+private final String URL_INCORRECT = "Provided URL is Incorrect,Please Check URL!";
+@GetMapping("/check")
+public String GetUrlStatusMsg(@RequestParam String url) {
+String returnMsg = "";
+try {
+URL urlObj = new URL(url);
+HttpURLConnection conn = (HttpURLConnection)
+urlObj.openConnection();
+conn.setRequestMethod("GET");
+conn.connect();
+int responseCodeCategory = conn.getResponseCode() / 100;
+/*
+* if (responseCodeCategory != 2 || responseCodeCategory !=
+3) {
+* returnMsg = SITE_IS_DOWN;
+* } else {
+* returnMsg = SITE_IS_UP;
+* }
+if (responseCodeCategory == 2 || responseCodeCategory == 3)
+{
+returnMsg = SITE_IS_UP;
+} else {
+returnMsg = SITE_IS_DOWN;
+}
+} catch (MalformedURLException e) {
+returnMsg = URL_INCORRECT;
+} catch (IOException e) {
+returnMsg = SITE_IS_DOWN;
+}
+return returnMsg;
+}
+}
+
+Before running the application kill the terminal and again run the application.
+
+
+########################################################################################
+
+PRAC 8 Create AWS Lambda Function
+
+Search lambda function with console
+Choose create Function.
+Select Author from scratch.
+Give function name as ‘ mypracCAD11’.
+Select Runtime as Python 3.8.
+Then, click create function.
+
+Now search S3
+
+Create a bucket with appropriate bucket name, AWS region and encryption.(asia pacific south1)
+
+Now go the roles under IAM and select the role and attach policies for S3 bucket access.
+Then, create a Test case and deploy the code.
+
+Code:
+import json
+import boto3
+s3 = boto3.client('s3')
+def lambda_handler(event, context):
+bucket='mycadbuckets'         //enter filename that you save as S3 bucket name.
+transactionToUpload = {}
+transactionToUpload['transactionId'] = '12345'
+transactionToUpload['type'] = 'PURCHASE'
+transactionToUpload['amount'] = 20
+transactionToUpload['customerID'] = 'CID-11111'
+filename = 'CID-11111' + '.json'
+uploadByteStream = bytes(json.dumps(transactionToUpload).encode('UTF-8'))
+s3.put_object(Bucket=bucket, Key=filename, Body=uploadByteStream)
+print('Put Completed')
+Add the “AmazonS3FullAccess” policy the IAM role.
+
+
+Now copy the paste the below code in the lambda Function which we have created earlier.
+Then, create a Test case and deploy the code
+
+###################################################################################
+9
+Build AWS Lambda with AWS API Gateway
+
+Login into the AWS console.
+Search for lambda on the service bar.
+
+Then, create a lambda function of name lambda-emi-calc.
+And select the Runtime of function as Python 3.9, then click on create function.
+Next step is to clear existing code and write emi calculator python code as below :
+Code:
+
+
+import json
+print('Loading function... Lambda emi calculator using API gateway')
+def lambda_handler(event, context):
+# 1. Parse out query string params
+principal = int(event['queryStringParameters']['p'])
+rate = float(event['queryStringParameters']['r'])
+time = int(event['queryStringParameters']['t'])
+emi = emi_calculator(principal, rate, time)
+# 2. Construct the body of the response object
+transactionResponse = {
+'p': principal,
+'r': rate,
+'t': time,
+'emi': emi
+}
+
+. Construct http response object
+
+responseObject = {
+'statusCode': 200,
+'headers': {
+'Content-Type': 'application/json'
+},
+'body': json.dumps(transactionResponse)
+}
+# 4. Return the response object
+return responseObject
+def emi_calculator(p, r, t):
+r = r / (12 * 100) # one month interest
+t = t * 12 # one month period
+emi = (p * r * pow(1 + r, t)) / (pow(1 + r, t) - 1)
+return emi
+
+Deploy the lambda function
+
+Then go to dropdown besides test and configure test event with sample input values for testing lambda function code.
+code:
+{
+"queryStringParameters": {
+"p": 10000,
+"r": 2.5,
+"t": 5
+}
+}
+test
+Go above and search for API gateway on the service bar and open it.
+Click on create API gateway
+Choose Rest API
+Click on import
+Create new API
+API name = EmiCalcApi
+Description = EmiCalcApi
+Endpoint type = Regional
+Click on create tab
+Next step clicks on actions then create resource
+
+Enter resource name as emi and click create resource
+Now click on create method
+Select Method as GET.
+Integration type as Lambda Function.
+Enable the Lambda proxy integration.
+Then, select the Lambda function which we have created previously.
+And click on create method.
+Deploy API button
+Enter stage name as dev.
+Deployment description as dev
+After deploying go to the Stage option from Api gateway column.
+Then click on the edit button from the stage details tab.
+After clicking on edit now we have to change the rate and burst for calculating EMI.
+To calculate the EMI, we have to place valid parameters
+Principle = p , Rate = r  and Time = t
+Then add rate (r) as certain value 5.8 and the final value time as 10
+Then copy the Invoke URL form the stage details and paste it in the browser.
+Need to add after url -  /emi?p=10000&r=5.8&t=10
+Now copy and paste the whole url in the browser and you will have the required EMI.
